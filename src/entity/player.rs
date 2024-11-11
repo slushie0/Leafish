@@ -210,16 +210,12 @@ fn update_render_players(
             });
 
             if player_model.has_name_tag {
-                let nametag_offset_matrix = Matrix4::from(Decomposed {
-                    scale: 1.0,
-                    rot: Quaternion::from_angle_y(Rad(cam_yaw as f32)),
-                    disp: offset,
-                });
-                mdl.matrix[PlayerModelPart::NameTag as usize] = nametag_offset_matrix * Matrix4::from(Decomposed {
-                    scale: 1.0,
-                    rot: Quaternion::from_angle_x(Rad(135.0+cam_pitch as f32)),
-                    disp: Vector3::new(0.0, (-24.0 / 16.0) - 0.6, 0.0),
-                });
+                mdl.matrix[PlayerModelPart::NameTag as usize] = Matrix4::from(Decomposed {
+                        scale: 1.0,
+                        rot: Quaternion::from_angle_y(Rad(cam_yaw as f32)),
+                        disp: offset + Vector3::new(0.0, (-24.0 / 16.0) - 0.6, 0.0),
+                    })
+                    * Matrix4::from(Quaternion::from_angle_x(Rad(135.0+cam_pitch as f32)));
             }
 
             mdl.matrix[PlayerModelPart::Head as usize] = offset_matrix
@@ -294,6 +290,22 @@ fn update_render_players(
                     -(i_time.cos() * 0.06 - 0.06) as f32
                 )))
                 * Matrix4::from(Quaternion::from_angle_x(Rad(-(i_time.sin() * 0.06) as f32)));
+            
+            if player_model.first_person {
+                mdl.matrix[PlayerModelPart::ArmRight as usize] = offset_matrix
+                * Matrix4::from_translation(Vector3::new(
+                    0.8,
+                    -1.0,
+                    -0.75,
+                ))
+                * Matrix4::from(Quaternion::from_angle_x(Rad(180.0)));
+                /*' * Matrix4::from(Quaternion::from_angle_z(Rad(
+                    (i_time.cos() * 0.06 - 0.06) as f32
+                )))
+                * Matrix4::from(Quaternion::from_angle_x(Rad((i_time.sin() * 0.06
+                    - ((7.5 - (player_model.arm_time - 7.5).abs()) / 7.5))
+                    as f32)));*/
+            }
 
             let mut update = true;
             if position.moved {
